@@ -58,3 +58,18 @@ jobs:
             echo "Could not access the Power BI workspace."
             exit 1
           fi
+
+      - name: List reports in DEV workspace
+        shell: bash
+        env:
+          WORKSPACE_ID: ${{ secrets.POWERBI_DEV_WORKSPACE_ID }}
+        run: |
+          echo "Getting reports from PBI-CICD-DEV..."
+
+          RESPONSE=$(curl -s \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "https://api.powerbi.com/v1.0/myorg/groups/${WORKSPACE_ID}/reports")
+
+          echo "Reports in DEV workspace:"
+          echo "$RESPONSE"
