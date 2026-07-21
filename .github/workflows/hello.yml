@@ -1,34 +1,19 @@
-name: Power BI Authentication Test
+name: Power BI CI Pipeline
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-  authenticate:
+  validate-powerbi-project:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Authenticate with Microsoft Entra ID
-        shell: bash
-        env:
-          TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Power BI project files
         run: |
-          echo "Requesting access token..."
-
-          RESPONSE=$(curl -s -X POST \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "client_id=${CLIENT_ID}" \
-            -d "client_secret=${CLIENT_SECRET}" \
-            -d "scope=https://analysis.windows.net/powerbi/api/.default" \
-            -d "grant_type=client_credentials" \
-            "https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token")
-
-          if echo "$RESPONSE" | grep -q '"access_token"'; then
-            echo "Authentication successful!"
-          else
-            echo "Authentication failed."
-            echo "$RESPONSE"
-            exit 1
-          fi
+          echo "Power BI project files:"
+          find . -maxdepth 2 -type f
