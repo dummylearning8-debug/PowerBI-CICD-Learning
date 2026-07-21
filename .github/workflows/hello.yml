@@ -1,4 +1,4 @@
-name: My First GitHub Action
+name: Power BI CI Pipeline
 
 on:
   push:
@@ -6,9 +6,14 @@ on:
       - main
 
 jobs:
-  hello:
+  validate-powerbi-project:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Say Hello
-        run: echo "Hello! My Power BI CI/CD pipeline is running."
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Power BI project files
+        run: |
+          echo "Power BI project files:"
+          find . -maxdepth 2 -type f
