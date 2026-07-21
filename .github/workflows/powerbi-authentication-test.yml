@@ -1,14 +1,14 @@
-name: Power BI Authentication Test
+name: Power BI API Access Test
 
 on:
   workflow_dispatch:
 
 jobs:
-  authenticate:
+  test-powerbi-api:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Authenticate with Microsoft Entra ID
+      - name: Get Power BI access token
         shell: bash
         env:
           TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -25,10 +25,36 @@ jobs:
             -d "grant_type=client_credentials" \
             "https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token")
 
-          if echo "$RESPONSE" | grep -q '"access_token"'; then
-            echo "Authentication successful!"
-          else
+          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
+
+          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
             echo "Authentication failed."
             echo "$RESPONSE"
+            exit 1
+          fi
+
+          echo "Authentication successful!"
+
+          echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> "$GITHUB_ENV"
+
+      - name: Test Power BI workspace access
+        shell: bash
+        env:
+          WORKSPACE_ID: ${{ secrets.POWERBI_DEV_WORKSPACE_ID }}
+        run: |
+          echo "Calling Power BI REST API..."
+
+          RESPONSE=$(curl -s \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "https://api.powerbi.com/v1.0/myorg/groups/${WORKSPACE_ID}")
+
+          echo "Power BI API response:"
+          echo "$RESPONSE"
+
+          if echo "$RESPONSE" | grep -q '"id"'; then
+            echo "Successfully accessed the Power BI workspace!"
+          else
+            echo "Could not access the Power BI workspace."
             exit 1
           fi
