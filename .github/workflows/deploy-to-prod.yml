@@ -1,0 +1,32 @@
+name: Deploy Power BI to PROD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-to-prod:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install fabric-cicd
+        run: |
+          python -m pip install --upgrade pip
+          pip install fabric-cicd
+
+      - name: Deploy Power BI project to PROD
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          POWERBI_DEV_WORKSPACE_ID: ${{ secrets.POWERBI_PROD_WORKSPACE_ID }}
+        run: |
+          cd fabric-cicd
+          python deploy.py
