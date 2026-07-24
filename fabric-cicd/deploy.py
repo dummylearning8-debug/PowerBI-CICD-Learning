@@ -14,7 +14,7 @@ credential = ClientSecretCredential(
 
 # Configure target workspace
 workspace = FabricWorkspace(
-    workspace_id=os.environ["POWERBI_DEV_WORKSPACE_ID"],
+    workspace_id=os.environ["DEPLOYMENT_WORKSPACE_ID"],
     environment="dev",
     repository_directory="..",
     item_type_in_scope=[
