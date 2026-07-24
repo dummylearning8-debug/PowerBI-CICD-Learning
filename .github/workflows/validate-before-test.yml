@@ -1,0 +1,56 @@
+name: Validate Power BI Project Before TEST
+
+on:
+  release:
+    types:
+      - published
+
+  workflow_dispatch:
+
+jobs:
+  validate-powerbi-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install fabric-cicd
+        run: |
+          python -m pip install --upgrade pip
+          pip install fabric-cicd
+
+      - name: Validate Power BI project structure
+        shell: bash
+        run: |
+          echo "Checking Power BI project structure..."
+
+          if [ ! -f "Life expectancy v202009.pbip" ]; then
+            echo "ERROR: PBIP file not found."
+            exit 1
+          fi
+
+          if [ ! -f "Life expectancy v202009.Report/definition.pbir" ]; then
+            echo "ERROR: Report definition not found."
+            exit 1
+          fi
+
+          if [ ! -f "Life expectancy v202009.SemanticModel/definition.pbism" ]; then
+            echo "ERROR: Semantic Model definition not found."
+            exit 1
+          fi
+
+          echo "Power BI project structure validation passed."
+
+      - name: Validation successful
+        run: |
+          echo "======================================"
+          echo "Power BI validation completed"
+          echo "Validation Status: SUCCESS"
+          echo "TEST deployment can proceed"
+          echo "======================================"
